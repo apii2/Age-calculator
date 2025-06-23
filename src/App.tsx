@@ -2,24 +2,24 @@ import type React from "react";
 import Result from "./components/Result"
 import { useState } from "react";
 
-export default function App() {
-  interface DataInterface{
-    name: string,
-    placeholder: string,
-    validation: {
-      required: {
-        value: boolean,
-        msg: string
-      },
-      length: {
-        min: number,
-        max: number,
-        value: boolean,
-        msg: string
-      }
+interface DataInterface{
+  name: string,
+  placeholder: string,
+  validation: {
+    required: {
+      value: boolean,
+      msg: string
+    },
+    length: {
+      min: number,
+      max: number,
+      value: boolean,
+      msg: string
     }
   }
+}
 
+export default function App() {
   let dataToValidate:Array<DataInterface> = [
     {
       name: 'day',
@@ -62,7 +62,7 @@ export default function App() {
           msg: 'This field is required'
         },
         length: {
-          min: 1990,
+          min: 1900,
           max: new Date().getFullYear(),
           value: true,
           msg: 'Must be a valid year'
@@ -80,7 +80,6 @@ export default function App() {
     setValidData(prev=>(
       prev.map((dat:DataInterface)=>{
         let value = Number(formData.get(dat.name));
-        let isInLimit = dat.validation.length.min < value && value <= dat.validation.length.max;
         if(!value){
           return {
             ...dat, 
@@ -93,6 +92,8 @@ export default function App() {
             }
           };
         }
+        
+        let isInLimit = dat.validation.length.min < value && value <= dat.validation.length.max;
         if(!isInLimit){
           return {
             ...dat, 
@@ -105,6 +106,26 @@ export default function App() {
             }
           };
         }
+
+        // let dateParts = validData.map(dat => formData.get(dat.name));
+        // let fullDate = dateParts.join('-');
+        // const date = new Date(fullDate);
+        // console.log(!isNaN(date.valueOf()))
+        // if(!(!isNaN(date.valueOf()))){
+        //   return (dat.name === 'day') ? 
+        //     {
+        //       ...dat, 
+        //       validation: {
+        //         ...dat.validation,
+        //         required: {
+        //           ...dat.validation.required,
+        //           value: false
+        //         } 
+        //       }
+        //     }
+        //     : dat;
+        // }
+
         return {
           ...dat, 
           validation: {
@@ -121,17 +142,17 @@ export default function App() {
       })
     ));
 
-    console.log(validData);
+    
   }
 
-  function errorMsg():string{
+  function errorMsg(name:string):string{
     for(const value of validData){
-      if(!value.validation.required.value && !value.validation.length.value){
-        return value.validation.required.msg;
-      }else if(!value.validation.length.value){
-        return value.validation.length.msg;
-      }else if(!value.validation.required.value){
-        return value.validation.required.msg;
+      if(value.name === name){
+        if(!value.validation.length.value){
+          return value.validation.length.msg;
+        }else if(!value.validation.required.value){
+          return value.validation.required.msg;
+        }
       }
     }
     return '';
@@ -153,8 +174,8 @@ export default function App() {
                 hover:border-Purple-500 focus-visible:border-Purple-500 focus-visible:outline-0`} 
               />
 
-              {(!item.validation.required.value || !item.validation.length.value) && <p className="text-Red-400 text-xs font-normal italic tracking-normal normal-case">{errorMsg()}</p>}
-              {/* <p></p> */}
+              {(!item.validation.required.value || !item.validation.length.value) && 
+                <p className="text-Red-400 text-xs font-normal italic tracking-normal normal-case">{errorMsg(item.name)}</p>}
             </label>
           ))}
           
@@ -163,7 +184,7 @@ export default function App() {
         <div className="relative my-10">
           <hr className="border-Grey-200"/>
 
-          <button className="cursor-pointer absolute top-0 bottom-0 my-auto right-0 w-20 h-20 group">
+          <button aria-label="Submit" className="cursor-pointer absolute top-0 bottom-0 my-auto right-0 w-20 h-20 group">
             <svg className="bg-Purple-500 group-hover:bg-black pointer-events-none p-5 w-full h-full rounded-full" xmlns="http://www.w3.org/2000/svg" width="46" height="44" viewBox="0 0 46 44" >
               <g strokeWidth="2" className="stroke-White fill-none">
                 <path d="M1 22.019C8.333 21.686 23 25.616 23 44M23 44V0M45 22.019C37.667 21.686 23 25.616 23 44"/>
