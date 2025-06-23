@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme{
+  --font-Poppins: 'Poppins', sans-serif;
+  --color-Purple-500: hsl(259, 100%, 65%);
+  --color-Red-400: hsl(0, 100%, 67%);
+  --color-White: hsl(0, 100%, 100%);
+  --color-Grey-100: hsl(0, 0%, 94%);
+  --color-Grey-200: hsl(0, 0%, 86%);
+  --color-Grey-500: hsl(0, 1%, 44%);
+}
+
+*{
+  @apply font-Poppins;
+}
+
+#root{
+  @apply bg-Grey-100 min-h-dvh flex justify-center items-center;
+}
