@@ -1,17 +1,48 @@
+import { useContext } from "react"
+import { DateContext } from "../contexts/DateContext";
+
 export default function Result() {
+
+  const ctx = useContext(DateContext);
+  if(!ctx) return null;
+  const {validData, isClear} = ctx;
+  console.log(ctx)
+  
+  const day   = Number(validData.find(f => f.name === 'day')?.value ?? 0);
+  const month = Number(validData.find(f => f.name === 'month')?.value ?? 0);
+  const year  = Number(validData.find(f => f.name === 'year')?.value ?? 0);
+
+  function Calculate(y:number, m:number, d:number){
+    if(isClear){
+      const fullDate = new Date(y, m-1, d);
+      const today = new Date();
+      
+      let year = today.getFullYear() - fullDate.getFullYear();
+      let month = today.getMonth() - fullDate.getMonth();
+      let day = today.getDate() - fullDate.getDate();
+      
+      if(month<0){
+        year--;
+        month = 12 - Math.abs(month);
+      }
+      if(day<0){
+        month===0||month--;
+        const prevMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
+        day = prevMonthEnd.getDate() - Math.abs(day);
+      }
+      return {'years':year, 'months':month, 'days':day};
+    }
+    return {'years':null, 'months':null, 'days':null};
+  }
+  const dateObj = Calculate(year, month, day);
+  
   return (
     <div className="space-y-2">
-      <div className="text-7xl font-bold italic">
-        <span className="text-Purple-500">--</span> years
-      </div>
-
-      <div className="text-7xl font-bold italic">
-        <span className="text-Purple-500">--</span> months
-      </div>
-
-      <div className="text-7xl font-bold italic">
-        <span className="text-Purple-500">--</span> days
-      </div>
+      {Object.entries(dateObj).map(([key,value])=>(
+        <div key={key} className="text-7xl font-bold italic">
+          <span className="text-Purple-500">{value??'--'}</span> {key}
+        </div>
+      ))}
     </div>
   )
 }

@@ -1,29 +1,15 @@
 import type React from "react";
 import Result from "./components/Result"
 import { useState } from "react";
-
-interface DataInterface{
-  name: string,
-  placeholder: string,
-  validation: {
-    required: {
-      value: boolean,
-      msg: string
-    },
-    length: {
-      min: number,
-      max: number,
-      value: boolean,
-      msg: string
-    }
-  }
-}
+import type DataInterface from "./types/DataInterface";
+import { DateContext } from "./contexts/DateContext";
 
 export default function App() {
   let dataToValidate:Array<DataInterface> = [
     {
       name: 'day',
       placeholder: 'DD',
+      value: '',
       validation: {
         required: {
           value: true,
@@ -40,6 +26,7 @@ export default function App() {
     {
       name: 'month',
       placeholder: 'MM',
+      value: '',
       validation: {
         required: {
           value: true,
@@ -56,6 +43,7 @@ export default function App() {
     {
       name: 'year',
       placeholder: 'YYYY',
+      value: '',
       validation: {
         required: {
           value: true,
@@ -71,78 +59,98 @@ export default function App() {
     }
   ];
 
-  const [validData, setValidData] = useState(dataToValidate);
+  let [isClear, setIsClear] = useState(false);
+  const [validData, setValidData] = useState<DataInterface[]>(dataToValidate);
+
+  function isValidDate(y: number, m: number, d: number) {
+    const date = new Date(y, m - 1, d);
+    return (
+      date.getFullYear() === y &&
+      date.getMonth() === m - 1 &&
+      date.getDate() === d
+    );
+  }
 
   function onSubmit(e:React.FormEvent<HTMLFormElement>){
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
 
+    const day   = Number(formData.get('day'));
+    const month = Number(formData.get('month'));
+    const year  = Number(formData.get('year'));
+    const isADate = isValidDate(year, month, day);
+
     setValidData(prev=>(
       prev.map((dat:DataInterface)=>{
-        let value = Number(formData.get(dat.name));
-        if(!value){
+        let val = (formData.get(dat.name) ?? '') as string;
+        let num = Number(val);
+
+        let next:DataInterface = {
+          ...dat,
+          value: val
+        };
+
+        if(!val){
+          setIsClear(false);
           return {
-            ...dat, 
+            ...next, 
             validation: {
-              ...dat.validation,
+              ...next.validation,
               required: {
-                ...dat.validation.required,
+                ...next.validation.required,
                 value: false
               } 
             }
           };
         }
         
-        let isInLimit = dat.validation.length.min < value && value <= dat.validation.length.max;
+        let isInLimit = next.validation.length.min < num && num <= next.validation.length.max;
         if(!isInLimit){
+          setIsClear(false);
           return {
-            ...dat, 
+            ...next, 
             validation: {
-              ...dat.validation,
+              ...next.validation,
               length: {
-                ...dat.validation.length,
+                ...next.validation.length,
                 value: false
               } 
             }
           };
         }
 
-        // let dateParts = validData.map(dat => formData.get(dat.name));
-        // let fullDate = dateParts.join('-');
-        // const date = new Date(fullDate);
-        // console.log(!isNaN(date.valueOf()))
-        // if(!(!isNaN(date.valueOf()))){
-        //   return (dat.name === 'day') ? 
-        //     {
-        //       ...dat, 
-        //       validation: {
-        //         ...dat.validation,
-        //         required: {
-        //           ...dat.validation.required,
-        //           value: false
-        //         } 
-        //       }
-        //     }
-        //     : dat;
-        // }
-
+        if(!isADate && next.name === 'day'){
+          setIsClear(false);
+          console.log(isClear);
+          return {
+            ...next, 
+            validation: {
+              ...next.validation,
+              length: {
+                ...next.validation.length,
+                value: false
+              } 
+            }
+          };
+        }
+        
+        setIsClear(true);
+        // console.log(isClear);
         return {
-          ...dat, 
+          ...next, 
           validation: {
             required: {
-              ...dat.validation.required,
+              ...next.validation.required,
               value: true
             },
             length: {
-              ...dat.validation.length,
+              ...next.validation.length,
               value: true
             }
           }
         };
       })
     ));
-
-    
   }
 
   function errorMsg(name:string):string{
@@ -160,41 +168,43 @@ export default function App() {
 
   return (
     <main className="bg-White p-10 rounded-2xl rounded-br-[9rem] min-w-2xl">
-      <form onSubmit={onSubmit} name="myForm">
-        <fieldset className="flex gap-6">
+      <DateContext.Provider value={{validData, isClear}}>
+        <form onSubmit={onSubmit} name="myForm">
+          <fieldset className="flex gap-6">
 
-          {validData.map(item=>(
-            <label key={item.name} className={`flex flex-col gap-2 uppercase tracking-[0.25rem] text-Grey-500 font-bold text-sm
-              ${(!item.validation.required.value || !item.validation.length.value) && 'text-Red-400'}`}>
-              {item.name}
+            {validData.map(item=>(
+              <label key={item.name} className={`flex flex-col gap-2 uppercase tracking-[0.25rem] text-Grey-500 font-bold text-sm
+                ${(!item.validation.required.value || !item.validation.length.value) && 'text-Red-400'}`}>
+                {item.name}
 
-              <input type="number" placeholder={item.placeholder} name={item.name} className={`border-Grey-200 border-1 border-solid rounded-md w-38 
-                text-3xl text-black tracking-normal px-5 py-3 
-                ${(!item.validation.required.value || !item.validation.length.value) && 'border-Red-400'}
-                hover:border-Purple-500 focus-visible:border-Purple-500 focus-visible:outline-0`} 
-              />
+                <input type="number" placeholder={item.placeholder} name={item.name} defaultValue={item.value}
+                  className={`border-Grey-200 border-1 border-solid rounded-md w-38 
+                  text-3xl text-black tracking-normal px-5 py-3 
+                  ${(!item.validation.required.value || !item.validation.length.value) && 'border-Red-400'}
+                  hover:border-Purple-500 focus-visible:border-Purple-500 focus-visible:outline-0`} 
+                />
 
-              {(!item.validation.required.value || !item.validation.length.value) && 
-                <p className="text-Red-400 text-xs font-normal italic tracking-normal normal-case">{errorMsg(item.name)}</p>}
-            </label>
-          ))}
-          
-        </fieldset>
+                <p className="text-Red-400 text-xs font-normal italic tracking-normal normal-case">{errorMsg(item.name)}</p>
+              </label>
+            ))}
+            
+          </fieldset>
 
-        <div className="relative my-10">
-          <hr className="border-Grey-200"/>
+          <div className="relative my-10">
+            <hr className="border-Grey-200"/>
 
-          <button aria-label="Submit" className="cursor-pointer absolute top-0 bottom-0 my-auto right-0 w-20 h-20 group">
-            <svg className="bg-Purple-500 group-hover:bg-black pointer-events-none p-5 w-full h-full rounded-full" xmlns="http://www.w3.org/2000/svg" width="46" height="44" viewBox="0 0 46 44" >
-              <g strokeWidth="2" className="stroke-White fill-none">
-                <path d="M1 22.019C8.333 21.686 23 25.616 23 44M23 44V0M45 22.019C37.667 21.686 23 25.616 23 44"/>
-              </g>
-            </svg>
-          </button>
-        </div>
-      </form>
+            <button type="submit" aria-label="Submit" className="cursor-pointer absolute top-0 bottom-0 my-auto right-0 w-20 h-20 group">
+              <svg className="bg-Purple-500 group-hover:bg-black pointer-events-none p-5 w-full h-full rounded-full" xmlns="http://www.w3.org/2000/svg" width="46" height="44" viewBox="0 0 46 44" >
+                <g strokeWidth="2" className="stroke-White fill-none">
+                  <path d="M1 22.019C8.333 21.686 23 25.616 23 44M23 44V0M45 22.019C37.667 21.686 23 25.616 23 44"/>
+                </g>
+              </svg>
+            </button>
+          </div>
+        </form>
 
-      <Result />
+        <Result />
+      </DateContext.Provider>
     </main>
   )
 }
