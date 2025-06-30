@@ -5,7 +5,7 @@ import type DataInterface from "./types/DataInterface";
 import { DateContext } from "./contexts/DateContext";
 import { DataToValidate } from "./data/DataToValidate";
 import type ErrorInterface from "./types/ErrorInterface";
-import { validation } from "./validation/Validation";
+import { validation } from "./methods/Validation";
 
 export default function App() {
   const [validData, setValidData] = useState<DataInterface[]>(DataToValidate);
@@ -30,33 +30,34 @@ export default function App() {
   }
 
   return (
-    <main className="bg-White p-10 rounded-2xl rounded-br-[9rem] min-w-2xl">
+    <main className="bg-White px-6 py-8 md:p-10 rounded-2xl rounded-br-[9rem] w-[calc(100%-4rem)] sm:w-md md:w-xl lg:w-2xl">
       <DateContext.Provider value={validData}>
         <form onSubmit={onSubmit} name="myForm">
-          <fieldset className="flex gap-6">
+          <fieldset className="flex gap-3 md:gap-6">
 
             {validData.map(item=>(
-              <label key={item.name} className={`flex flex-col gap-2 uppercase tracking-[0.25rem] text-Grey-500 font-bold text-sm
+              <label key={item.name} className={`flex flex-col flex-1 md:flex-0 gap-2 uppercase tracking-[0.25rem] text-Grey-500 font-bold text-xs md:text-sm
                 ${error?.[item.name] && 'text-Red-400'}`}>
                 {item.name}
 
                 <input type="number" placeholder={item.placeholder} name={item.name} defaultValue={item.value}
-                  className={`border-Grey-200 border-1 border-solid rounded-md w-38 
-                  text-3xl text-black tracking-normal px-5 py-3 
+                  className={`border-Grey-200 border-1 border-solid rounded-md w-full md:min-w-38 
+                  text-base md:text-3xl text-black tracking-normal px-2 md:px-5 py-3 
                   ${error?.[item.name] && 'border-Red-400'}
                   hover:border-Purple-500 focus-visible:border-Purple-500 focus-visible:outline-0`} 
                 />
 
-                <p className="text-Red-400 text-xs font-normal italic tracking-normal normal-case">{error?.[item.name] || ''}</p>
+                <p className="text-Red-400 text-[10px] md:text-xs font-normal italic tracking-normal normal-case">{error?.[item.name] || ''}</p>
               </label>
             ))}
             
           </fieldset>
 
-          <div className="relative my-10">
+          <div className="relative my-16 md:my-10">
             <hr className="border-Grey-200"/>
 
-            <button type="submit" aria-label="Submit" className="cursor-pointer absolute top-0 bottom-0 my-auto right-0 w-20 h-20 group">
+            <button type="submit" aria-label="Submit" 
+              className="cursor-pointer absolute top-0 bottom-0 my-auto right-0 left-0 mx-auto sm:left-auto w-18 h-18 md:w-20 md:h-20 group">
               <svg className="bg-Purple-500 group-hover:bg-black pointer-events-none p-5 w-full h-full rounded-full" xmlns="http://www.w3.org/2000/svg" width="46" height="44" viewBox="0 0 46 44" >
                 <g strokeWidth="2" className="stroke-White fill-none">
                   <path d="M1 22.019C8.333 21.686 23 25.616 23 44M23 44V0M45 22.019C37.667 21.686 23 25.616 23 44"/>
