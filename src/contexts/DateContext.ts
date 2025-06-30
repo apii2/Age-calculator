@@ -1,10 +1,5 @@
 import { createContext } from "react";
 import type DataInterface from "../types/DataInterface";
+import { DataToValidate } from "../data/DataToValidate";
 
-
-export interface DateContextType {
-  validData: DataInterface[];
-  isClear: boolean;
-}
-
-export const DateContext = createContext<DateContextType|null>(null);
+export const DateContext = createContext<DataInterface[]>(DataToValidate);

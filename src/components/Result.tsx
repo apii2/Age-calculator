@@ -3,17 +3,14 @@ import { DateContext } from "../contexts/DateContext";
 
 export default function Result() {
 
-  const ctx = useContext(DateContext);
-  if(!ctx) return null;
-  const {validData, isClear} = ctx;
-  console.log(ctx)
+  const validData = useContext(DateContext);
   
   const day   = Number(validData.find(f => f.name === 'day')?.value ?? 0);
   const month = Number(validData.find(f => f.name === 'month')?.value ?? 0);
   const year  = Number(validData.find(f => f.name === 'year')?.value ?? 0);
 
   function Calculate(y:number, m:number, d:number){
-    if(isClear){
+    if(day && month && year){
       const fullDate = new Date(y, m-1, d);
       const today = new Date();
       
@@ -30,8 +27,10 @@ export default function Result() {
         const prevMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
         day = prevMonthEnd.getDate() - Math.abs(day);
       }
+      
       return {'years':year, 'months':month, 'days':day};
     }
+
     return {'years':null, 'months':null, 'days':null};
   }
   const dateObj = Calculate(year, month, day);
@@ -40,7 +39,7 @@ export default function Result() {
     <div className="space-y-2">
       {Object.entries(dateObj).map(([key,value])=>(
         <div key={key} className="text-7xl font-bold italic">
-          <span className="text-Purple-500">{value??'--'}</span> {key}
+          <span className="text-Purple-500">{value ?? '--'}</span> {key}
         </div>
       ))}
     </div>
